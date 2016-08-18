@@ -235,6 +235,41 @@ VISH.Editor.API = (function(V,$,undefined){
 		});
 	};
 
+	var uploadToXWiki(fileUrl, responseFormat, successCallback, failCallback) {
+		if(responseFormat.slice(0,4) === "xwiki") {
+			// XWiki sends 0 if there was an error, 1 if everything went well
+			var receiveMessage = function (event) {
+				if (event.origin !== "http://localhost:8080") { return; }
+				if (event.data == 0) {
+					failCallback && failCallback();
+					return;
+				}
+				successCallback && successCallback();
+			}
+			window.addEventListener("message", receiveMessage, false);
+
+			// Post the blob to the XWiki iframe
+			var handler = function(blobFile) {
+				var iframeWin = document.getElementById("hiddenIframeForXWikiUploads").contentWindow;
+				iframeWin.postMessage(blobFile, "http://localhost:8080");
+			}
+
+			// Get the blob from the file url
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function(){
+				if (this.readyState == 4 && this.status == 200) {
+					handler(this.response);
+				}
+			}
+			xhr.open('GET', fileUrl);
+			xhr.responseType = 'blob';
+			xhr.send();
+
+			return;
+		}
+	};
+
+
 	var uploadTmpJSON = function(json, responseFormat, successCallback, failCallback){
 		if(typeof V.UploadJSONPath != "string"){
 			if(typeof failCallback == "function"){
@@ -256,6 +291,9 @@ VISH.Editor.API = (function(V,$,undefined){
 			},
 			success: function(data){
 				if((data)&&(data.url)){
+					if(responseFormat.slice(0,4) === "xwiki") {
+						uplaodToXWiki(data.url, responseFormat, successCallback, failCallback);
+					}
 					if (data.xml){
 						var element = document.createElement('a');
 						element.setAttribute('href', 'data:application/xml;charset=utf-8,' + encodeURIComponent(data.xml));

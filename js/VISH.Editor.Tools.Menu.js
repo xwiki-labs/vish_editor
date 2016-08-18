@@ -437,13 +437,22 @@ VISH.Editor.Tools.Menu = (function(V,$,undefined){
 	var exportToJSON = function(){
 		_exportTo("json");
 	};
+	var exportToXWikiJSON = function(){
+		_exportTo("xwiki-json");
+	};
 
 	var exportToSCORM12 = function(){
 		_exportTo("scorm12");
 	};
+	var exportToXWikiSCORM12 = function(){
+		_exportTo("xwiki-scorm12");
+	};
 
 	var exportToSCORM2004 = function(){
 		_exportTo("scorm2004");
+	};
+	var exportToXWikiSCORM2004 = function(){
+		_exportTo("xwiki-scorm2004");
 	};
 
 	var displaySettings = function(){
@@ -472,8 +481,11 @@ VISH.Editor.Tools.Menu = (function(V,$,undefined){
 		insertEFile						: insertEFile,
 		insertPresentation				: insertPresentation,
 		exportToJSON 					: exportToJSON,
+		exportToXWikiJSON 				: exportToXWikiJSON,
 		exportToSCORM12					: exportToSCORM12,
+		exportToXWikiSCORM12			: exportToXWikiSCORM12,
 		exportToSCORM2004				: exportToSCORM2004,
+		exportToXWikiSCORM2004			: exportToXWikiSCORM2004,
 		displaySettings					: displaySettings,
 		onPublishButtonClicked			: onPublishButtonClicked,
 		onUnpublishButtonClicked		: onUnpublishButtonClicked,
