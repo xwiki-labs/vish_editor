@@ -235,8 +235,8 @@ VISH.Editor.API = (function(V,$,undefined){
 		});
 	};
 
-	var uploadToXWiki(fileUrl, responseFormat, successCallback, failCallback) {
-		if(responseFormat.slice(0,4) === "xwiki") {
+	var uploadToXWiki = function (fileUrl, responseFormat, successCallback, failCallback) {
+		if(responseFormat.slice(0,5) === "xwiki") {
 			// XWiki sends 0 if there was an error, 1 if everything went well
 			var receiveMessage = function (event) {
 				if (event.origin !== "http://localhost:8080") { return; }
@@ -291,8 +291,9 @@ VISH.Editor.API = (function(V,$,undefined){
 			},
 			success: function(data){
 				if((data)&&(data.url)){
-					if(responseFormat.slice(0,4) === "xwiki") {
-						uplaodToXWiki(data.url, responseFormat, successCallback, failCallback);
+					if(responseFormat.slice(0,5) === "xwiki") {
+						uploadToXWiki(data.url, responseFormat, successCallback, failCallback);
+						return;
 					}
 					if (data.xml){
 						var element = document.createElement('a');
