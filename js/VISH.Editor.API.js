@@ -250,13 +250,6 @@ VISH.Editor.API = (function(V,$,undefined){
 				failCallback && failCallback();
 			}, 60000);
 
-			// Set the correct src to the iframe
-			var initIframe = function(iframe) {
-
-				var xwikiURL = config.XWiki_url + "MOOC/Code/IframeVISH?xpage=plain&htmlHeaderAndFooter=true";
-				iframe.src = xwikiURL;
-			};
-
 			// XWiki sends 0 if there was an error, 1 if everything went well
 			var receiveMessage = function (event) {
 				if (event.origin !== xwikiDomain) { return; }
@@ -275,16 +268,16 @@ VISH.Editor.API = (function(V,$,undefined){
 			var handler = function (blobFile) {
 				var iframe = document.getElementById("hiddenIframeForXWikiUploads");
 				var iframeWin = iframe.contentWindow;
-				var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 				var postMsg = function () {
 					iframeWin.postMessage(blobFile, xwikiDomain);
 				}
-				if (iframe.src && iframeDoc.readyState === 'complete') {
+				if (iframe.src) {
 					postMsg();
 					return;
 				} else {
 					iframe.onload = postMsg;
-					initIframe(iframe);
+					var xwikiURL = config.XWiki_url + "MOOC/Code/IframeVISH?xpage=plain&htmlHeaderAndFooter=true";
+					iframe.src = xwikiURL;
 				}
 			}
 
