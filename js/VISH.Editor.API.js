@@ -237,7 +237,7 @@ VISH.Editor.API = (function(V,$,undefined){
 
 	var uploadToXWiki = function (fileUrl, responseFormat, successCallback, failCallback) {
 		var config = V.Configuration.getConfiguration();
-		if (responseFormat.slice(0,5) === "xwiki" && config.XWiki_url) {
+		if (config.XWiki_url) {
 			// Check that the xwiki url is correct
 			var urlSplit = config.XWiki_url.split('/');
 			if (urlSplit.length < 3) {
@@ -269,7 +269,13 @@ VISH.Editor.API = (function(V,$,undefined){
 				var iframe = document.getElementById("hiddenIframeForXWikiUploads");
 				var iframeWin = iframe.contentWindow;
 				var postMsg = function () {
-					iframeWin.postMessage(blobFile, xwikiDomain);
+					var id = V.exitPath.split('/').length > 1 ? parseInt(V.exitPath.split('/')[1]) : 0;
+					var data = {
+						blob: blobFile,
+						format: responseFormat,
+						id: id
+					};
+					iframeWin.postMessage(data, xwikiDomain);
 				}
 				if (iframe.src) {
 					postMsg();
@@ -307,6 +313,9 @@ VISH.Editor.API = (function(V,$,undefined){
 
 		responseFormat = (typeof responseFormat=="string") ? responseFormat : "json"
 
+		var isXWikiUpload = responseFormat.slice(0, 5) === "xwiki";
+		responseFormat = isXWikiUpload ? responseFormat.slice(6) : responseFormat;
+
 		$.ajax({
 			type: 'POST',
 			url: V.UploadJSONPath,
@@ -318,7 +327,7 @@ VISH.Editor.API = (function(V,$,undefined){
 			},
 			success: function(data){
 				if((data)&&(data.url)){
-					if(responseFormat.slice(0,5) === "xwiki") {
+					if(isXWikiUpload) {
 						uploadToXWiki(data.url, responseFormat, successCallback, failCallback);
 						return;
 					}
