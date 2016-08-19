@@ -269,7 +269,7 @@ VISH.Editor.API = (function(V,$,undefined){
 				var iframe = document.getElementById("hiddenIframeForXWikiUploads");
 				var iframeWin = iframe.contentWindow;
 				var postMsg = function () {
-					var id = V.exitPath.split('/').length > 1 ? parseInt(V.exitPath.split('/')[1]) : 0;
+					var id = V.exitPath.split('/').length > 2 ? parseInt(V.exitPath.split('/')[2]) : 0; // /excursions/{id}
 					var data = {
 						blob: blobFile,
 						format: responseFormat,
