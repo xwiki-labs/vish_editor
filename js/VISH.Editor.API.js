@@ -236,10 +236,26 @@ VISH.Editor.API = (function(V,$,undefined){
 	};
 
 	var uploadToXWiki = function (fileUrl, responseFormat, successCallback, failCallback) {
-		if(responseFormat.slice(0,5) === "xwiki") {
+		var config = V.Configuration.getConfiguration();
+		if (config.XWiki_url) {
+			// Check that the xwiki url is correct
+			var urlSplit = config.XWiki_url.split('/');
+			if (urlSplit.length < 3) {
+				failCallback && failCallback();
+				return;
+			}
+			var xwikiDomain = urlSplit[0] + "//" + urlSplit[2];
+
+			var timeout = window.setTimeout(function() {
+				failCallback && failCallback();
+			}, 60000);
+
 			// XWiki sends 0 if there was an error, 1 if everything went well
 			var receiveMessage = function (event) {
-				if (event.origin !== "http://localhost:8080") { return; }
+				if (event.origin !== xwikiDomain) { return; }
+
+				window.clearTimeout(timeout);
+
 				if (event.data == 0) {
 					failCallback && failCallback();
 					return;
@@ -249,9 +265,26 @@ VISH.Editor.API = (function(V,$,undefined){
 			window.addEventListener("message", receiveMessage, false);
 
 			// Post the blob to the XWiki iframe
-			var handler = function(blobFile) {
-				var iframeWin = document.getElementById("hiddenIframeForXWikiUploads").contentWindow;
-				iframeWin.postMessage(blobFile, "http://localhost:8080");
+			var handler = function (blobFile) {
+				var iframe = document.getElementById("hiddenIframeForXWikiUploads");
+				var iframeWin = iframe.contentWindow;
+				var postMsg = function () {
+					var id = V.exitPath.split('/').length > 2 ? parseInt(V.exitPath.split('/')[2]) : 0; // /excursions/{id}
+					var data = {
+						blob: blobFile,
+						format: responseFormat,
+						id: id
+					};
+					iframeWin.postMessage(data, xwikiDomain);
+				}
+				if (iframe.src) {
+					postMsg();
+					return;
+				} else {
+					iframe.onload = postMsg;
+					var xwikiURL = config.XWiki_url + "MOOC/Code/IframeVISH?xpage=plain&htmlHeaderAndFooter=true";
+					iframe.src = xwikiURL;
+				}
 			}
 
 			// Get the blob from the file url
@@ -280,6 +313,9 @@ VISH.Editor.API = (function(V,$,undefined){
 
 		responseFormat = (typeof responseFormat=="string") ? responseFormat : "json"
 
+		var isXWikiUpload = responseFormat.slice(0, 5) === "xwiki";
+		responseFormat = isXWikiUpload ? responseFormat.slice(6) : responseFormat;
+
 		$.ajax({
 			type: 'POST',
 			url: V.UploadJSONPath,
@@ -291,7 +327,7 @@ VISH.Editor.API = (function(V,$,undefined){
 			},
 			success: function(data){
 				if((data)&&(data.url)){
-					if(responseFormat.slice(0,5) === "xwiki") {
+					if(isXWikiUpload) {
 						uploadToXWiki(data.url, responseFormat, successCallback, failCallback);
 						return;
 					}
