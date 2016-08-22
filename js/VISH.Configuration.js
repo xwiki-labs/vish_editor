@@ -116,6 +116,7 @@ VISH.Configuration = (function(V,$,undefined){
 
     //XWiki
     if(configuration["XWiki"]!==true){
+      $(".xwiki_export").css("display", "none");
       $("#tab_pic_xwiki").css("display","none").addClass("disabled");
     }
 
